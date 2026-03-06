@@ -278,6 +278,24 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
+		// Check that the project data directory `CACHEDIR.TAG` file exists with the correct header.
+		{
+			const String cachedir_tag_signature = "Signature: 8a477f597d28d172789f06886806bc55";
+			String project_data_cache_tag_file_path = project_data_dir.path_join("CACHEDIR.TAG");
+			Ref<FileAccess> f = FileAccess::open(project_data_cache_tag_file_path, FileAccess::READ);
+			if (!f.is_valid() || !f->get_line().begins_with(cachedir_tag_signature)) {
+				f = FileAccess::open(project_data_cache_tag_file_path, FileAccess::WRITE);
+				if (f.is_valid()) {
+					f->store_line(cachedir_tag_signature);
+					f->store_line("# This file is a cache directory tag created by Godot.");
+					f->store_line("# For information about cache directory tags, see:");
+					f->store_line("#\thttps://bford.info/cachedir/");
+				} else {
+					ERR_PRINT("Failed to create file " + project_data_cache_tag_file_path.quote() + ".");
+				}
+			}
+		}
+
 		Engine::get_singleton()->set_shader_cache_path(project_data_dir);
 
 		// Editor metadata dir.
